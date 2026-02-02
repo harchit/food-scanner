@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Halal Scanner",
+    "slug": "halal-scanner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1117"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.halalscanner.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to scan food barcodes and check if products are halal."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D1117"
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.halalscanner.app"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Halal Scanner to access your camera to scan food barcodes."
+        }
+      ],
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow Halal Scanner to access your camera to scan food barcodes."
+        }
+      ]
+    ]
+  }
+}
