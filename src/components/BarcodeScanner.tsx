@@ -7,12 +7,12 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import { BarCodeScanner, BarCodeScannerResult } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../constants/theme';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const SCAN_AREA_SIZE = width * 0.7;
 
 interface BarcodeScannerProps {
@@ -21,24 +21,15 @@ interface BarcodeScannerProps {
 }
 
 export default function BarcodeScanner({ onScan, isScanning }: BarcodeScannerProps) {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [scanLineAnim] = useState(new Animated.Value(0));
-
-  useEffect(() => {
-    requestCameraPermission();
-  }, []);
 
   useEffect(() => {
     if (isScanning && !scanned) {
       startScanAnimation();
     }
   }, [isScanning, scanned]);
-
-  const requestCameraPermission = async () => {
-    const { status } = await BarCodeScanner.requestPermissionsAsync();
-    setHasPermission(status === 'granted');
-  };
 
   const startScanAnimation = () => {
     scanLineAnim.setValue(0);
@@ -58,12 +49,12 @@ export default function BarcodeScanner({ onScan, isScanning }: BarcodeScannerPro
     ).start();
   };
 
-  const handleBarCodeScanned = async ({ type, data }: BarCodeScannerResult) => {
+  const handleBarCodeScanned = async (result: BarcodeScanningResult) => {
     if (scanned || !isScanning) return;
 
     setScanned(true);
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onScan(data);
+    onScan(result.data);
 
     // Reset after a delay to allow rescanning
     setTimeout(() => setScanned(false), 2000);
@@ -74,7 +65,7 @@ export default function BarcodeScanner({ onScan, isScanning }: BarcodeScannerPro
     outputRange: [0, SCAN_AREA_SIZE - 4],
   });
 
-  if (hasPermission === null) {
+  if (!permission) {
     return (
       <View style={styles.permissionContainer}>
         <Ionicons name="camera-outline" size={64} color={colors.textMuted} />
@@ -83,7 +74,7 @@ export default function BarcodeScanner({ onScan, isScanning }: BarcodeScannerPro
     );
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
       <View style={styles.permissionContainer}>
         <Ionicons name="camera-off-outline" size={64} color={colors.error} />
@@ -91,7 +82,7 @@ export default function BarcodeScanner({ onScan, isScanning }: BarcodeScannerPro
         <Text style={styles.permissionSubtext}>
           Please enable camera access in your device settings to scan barcodes.
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={requestCameraPermission}>
+        <TouchableOpacity style={styles.retryButton} onPress={requestPermission}>
           <Text style={styles.retryButtonText}>Request Permission</Text>
         </TouchableOpacity>
       </View>
@@ -100,15 +91,13 @@ export default function BarcodeScanner({ onScan, isScanning }: BarcodeScannerPro
 
   return (
     <View style={styles.container}>
-      <BarCodeScanner
-        onBarCodeScanned={handleBarCodeScanned}
+      <CameraView
         style={StyleSheet.absoluteFillObject}
-        barCodeTypes={[
-          BarCodeScanner.Constants.BarCodeType.ean13,
-          BarCodeScanner.Constants.BarCodeType.ean8,
-          BarCodeScanner.Constants.BarCodeType.upc_a,
-          BarCodeScanner.Constants.BarCodeType.upc_e,
-        ]}
+        facing="back"
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e'],
+        }}
+        onBarcodeScanned={isScanning && !scanned ? handleBarCodeScanned : undefined}
       />
 
       {/* Overlay */}

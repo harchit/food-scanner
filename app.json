@@ -37,12 +37,6 @@
         {
           "cameraPermission": "Allow Halal Scanner to access your camera to scan food barcodes."
         }
-      ],
-      [
-        "expo-barcode-scanner",
-        {
-          "cameraPermission": "Allow Halal Scanner to access your camera to scan food barcodes."
-        }
       ]
     ]
   }
